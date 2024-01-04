@@ -1,11 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState } from 'react'
-import {
-  Link,
-  Routes,
-  Route,
-  useMatch,
-} from 'react-router-dom'
+import { Link, Routes, Route, useMatch, useNavigate } from 'react-router-dom'
 const Menu = () => {
   const padding = {
     paddingRight: 5,
@@ -71,11 +66,16 @@ const Footer = () => (
   </div>
 )
 
+const Notification = ({ notification }) => {
+  return <p>{notification}</p>
+}
+
 const CreateNew = (props) => {
   const [content, setContent] = useState('')
   const [author, setAuthor] = useState('')
   const [info, setInfo] = useState('')
 
+  const navigate = useNavigate()
   const handleSubmit = (e) => {
     e.preventDefault()
     props.addNew({
@@ -84,6 +84,8 @@ const CreateNew = (props) => {
       info,
       votes: 0,
     })
+    navigate('/')
+    props.showNotif(content + ' created!')
   }
 
   return (
@@ -158,6 +160,10 @@ const App = () => {
 
   const [notification, setNotification] = useState('')
 
+  const showNotification = (message) => {
+    setNotification(message)
+    setTimeout(() => setNotification(''), 5000)
+  }
   const addNew = (anecdote) => {
     anecdote.id = Math.round(Math.random() * 10000)
     setAnecdotes(anecdotes.concat(anecdote))
@@ -182,12 +188,16 @@ const App = () => {
     <div>
       <h1>Software anecdotes</h1>
       <Menu />
+      <Notification notification={notification} />
       <Routes>
         <Route
           path="/"
           element={<AnecdoteList anecdotes={anecdotes} />}
         ></Route>
-        <Route path="/create" element={<CreateNew addNew={addNew} />}></Route>
+        <Route
+          path="/create"
+          element={<CreateNew addNew={addNew} showNotif={showNotification} />}
+        ></Route>
         <Route path="/about" element={<About />}></Route>
         <Route
           path="/anecdotes/:id"
